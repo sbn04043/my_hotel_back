@@ -16,18 +16,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoomTypeService {
 
-    @Autowired
     private final RoomTypeRepository roomTypeRepository;
 
     @Transactional
     public List<RoomTypeDto> selectAll() {
-        List<RoomTypeEntity> roomTypeEntityList = roomTypeRepository.findAll();
-        List<RoomTypeDto> roomTypeDtoList = new ArrayList<>();
-
-        for (RoomTypeEntity roomTypeEntity : roomTypeEntityList) {
-            roomTypeDtoList.add(RoomTypeDto.toRoomTypeDto(roomTypeEntity));
-        }
-        return roomTypeDtoList;
+        return roomTypeRepository.findAll().stream().map(RoomTypeDto::toRoomTypeDto).toList();
     }
 
 

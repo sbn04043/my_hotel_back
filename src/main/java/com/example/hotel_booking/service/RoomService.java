@@ -7,59 +7,32 @@ import com.example.hotel_booking.entity.RoomEntity;
 import com.example.hotel_booking.entity.RoomTypeEntity;
 import com.example.hotel_booking.repository.*;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-
+@RequiredArgsConstructor
 public class RoomService {
+    private final HotelRepository hotelRepository;
+    private final RoomRepository roomRepository;
+    private final RoomTypeRepository roomTypeRepository;
+    private final ReservationRepository reservationRepository;
 
-
-    private final HotelRepository HOTEL_REPOSITORY;
-    private final RoomRepository ROOM_REPOSITORY;
-    private final RoomFileRepository ROOM_FILE_REPOSITORY;
-    private final RoomTypeRepository ROOM_TYPE_REPOSITORY;
-    private final ReservationRepository RESERVATION_REPOSITORY;
-
-    @Autowired
-    public RoomService(HotelRepository hotelRepository,
-                       RoomRepository roomRepository,
-                       RoomTypeRepository roomTypeRepository,
-                       RoomFileRepository roomFileRepository,
-                       ReservationRepository reservationRepository) {
-        this.HOTEL_REPOSITORY = hotelRepository;
-        this.ROOM_REPOSITORY = roomRepository;
-        this.ROOM_FILE_REPOSITORY = roomFileRepository;
-        this.ROOM_TYPE_REPOSITORY = roomTypeRepository;
-        this.RESERVATION_REPOSITORY = reservationRepository;
-    }
-
-    public Long insert(RoomDto roomDto) throws IOException {
-
-        Optional<HotelEntity> optionalHotelEntity = HOTEL_REPOSITORY.findById(roomDto.getHotelId());
-        if (optionalHotelEntity.isPresent()) {
-            HotelEntity hotelEntity = optionalHotelEntity.get();
-
-            RoomTypeEntity roomTypeEntity = ROOM_TYPE_REPOSITORY.findById(roomDto.getRoomTypeId()).get();
-            RoomEntity roomEntity = RoomEntity.toInsertEntity(roomDto, hotelEntity, roomTypeEntity);
-            return ROOM_REPOSITORY.save(roomEntity).getId();
-
-        }
-        return null;
+    public RoomDto insert(RoomDto roomDto) {
+        return RoomDto.toRoomDto(roomRepository.save(RoomEntity.toInsertEntity(roomDto)));
     }
 
     @Transactional
     public List<RoomDto> selectAll(Long hotelId) {
-        HotelEntity hotelEntity = HOTEL_REPOSITORY.findById(hotelId).get();
-        List<RoomEntity> roomEntityList = ROOM_REPOSITORY.findAllByHotelEntityOrderByIdDesc(hotelEntity);
+        HotelEntity hotelEntity = hotelRepository.findById(hotelId).get();
+        List<RoomEntity> roomEntityList = roomRepository.findAllByHotelEntityOrderByIdDesc(hotelEntity);
         List<RoomDto> roomDtoList = new ArrayList<>();
         for (RoomEntity roomEntity : roomEntityList) {
-            RoomDto roomDto = RoomDto.toRoomDto(roomEntity, hotelId);
+            RoomDto roomDto = RoomDto.toRoomDto(roomEntity);
             roomDtoList.add(roomDto);
         }
         return roomDtoList;
@@ -67,11 +40,11 @@ public class RoomService {
 
     @Transactional
     public RoomDto selectOne(Long roomId) {
-        Optional<RoomEntity> optionalRoomEntity = ROOM_REPOSITORY.findById(roomId);
+        Optional<RoomEntity> optionalRoomEntity = roomRepository.findById(roomId);
 //        System.out.println(optionalRoomEntity);
         if (optionalRoomEntity.isPresent()) {
             RoomEntity roomEntity = optionalRoomEntity.get();
-            RoomDto roomDto = RoomDto.toRoomDto(roomEntity, roomEntity.getHotelEntity().getId());
+            RoomDto roomDto = RoomDto.toRoomDto(roomEntity);
             return roomDto;
         } else {
             return null;
@@ -80,28 +53,33 @@ public class RoomService {
 
     @Transactional
     public RoomDto update(RoomDto roomDto) {
-        HotelEntity hotelEntity = HOTEL_REPOSITORY.findById(roomDto.getHotelId()).get();
-        RoomTypeEntity roomTypeEntity = ROOM_TYPE_REPOSITORY.findById(roomDto.getRoomTypeId()).get();
+        HotelEntity hotelEntity = hotelRepository.findById(roomDto.getHotelId()).get();
+        RoomTypeEntity roomTypeEntity = roomTypeRepository.findById(roomDto.getRoomTypeId()).get();
         RoomEntity roomEntity = RoomEntity.toUpdateEntity(roomDto, hotelEntity, roomTypeEntity);
-        ROOM_REPOSITORY.save(roomEntity);
+        roomRepository.save(roomEntity);
         return selectOne(roomDto.getId());
     }
 
     @Transactional
-    public void delete(Long id) {
-        ROOM_REPOSITORY.deleteById(id);
+    public Boolean delete(Long id) {
+        if (roomRepository.existsById(id)) {
+            roomRepository.deleteById(id);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Transactional
     public List<RoomDto> selectAllByCondition(String startDate, String endDate, Long hotelId, Integer peopleCount) {
         List<RoomDto> roomDtoList = new ArrayList<>();
-        List<RoomEntity> roomEntityList = ROOM_REPOSITORY.findAllByHotelId(hotelId);
+        List<RoomEntity> roomEntityList = roomRepository.findAllByHotelId(hotelId);
 
         for (int i = 0; i < roomEntityList.size(); i++) {
             RoomEntity roomEntity = roomEntityList.get(i);
             System.out.println(roomEntity.toString());
 
-            List<ReservationEntity> reservationEntityList = RESERVATION_REPOSITORY.findAllByRoomId(roomEntity.getId());
+            List<ReservationEntity> reservationEntityList = reservationRepository.findAllByRoomId(roomEntity.getId());
             int num = 0;
             System.out.println(startDate + " " + endDate);
             for (ReservationEntity reservationEntity : reservationEntityList) {
@@ -133,7 +111,7 @@ public class RoomService {
 
             RoomEntity tempRoomEntity = (RoomEntity) roomEntity.clone();
             tempRoomEntity.setRoomMax(roomEntity.getRoomMax() - num);
-            roomDtoList.add(RoomDto.toRoomDto(tempRoomEntity, hotelId));
+            roomDtoList.add(RoomDto.toRoomDto(tempRoomEntity));
         }
 
         return roomDtoList;

@@ -19,6 +19,7 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class RoomDto implements Serializable {
     private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
@@ -39,17 +40,14 @@ public class RoomDto implements Serializable {
     private List<String> storedFileName; // 서버 저장용 파일 이름
 
 
-    public static RoomDto toRoomDto(RoomEntity roomEntity, Long hotelId) {
+    public static RoomDto toRoomDto(RoomEntity roomEntity) {
         RoomDto roomDto = new RoomDto();
         roomDto.setId(roomEntity.getId());
         roomDto.setRoomName(roomEntity.getRoomName());
         roomDto.setRoomMax(roomEntity.getRoomMax());
         roomDto.setRoomPrice(roomEntity.getRoomPrice());
         roomDto.setRoomContent(roomEntity.getRoomContent());
-        roomDto.setHotelId(hotelId);
         roomDto.setRoomTypeId(roomEntity.getRoomTypeEntity().getId());
-       /* roomDto.setCheckIn(roomEntity.getCheckIn());
-        roomDto.setCheckOut(roomEntity.getCheckOut());*/
         roomDto.setCreatedTime(roomEntity.getCreatedTime());
         roomDto.setUpdatedTime(roomEntity.getUpdatedTime());
         roomDto.setBreakfastPrice(roomEntity.getBreakfastPrice());

@@ -110,10 +110,7 @@ public class GuestController {
     }
 
     @PostMapping("/check-password")
-    public ResponseEntity<Map<String, Boolean>> checkPassword(@RequestBody PasswordCheckRequest request) {
-        boolean valid = guestService.checkPassword(request.getUserId(), request.getPassword());
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("valid", valid);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Boolean> checkPassword(@RequestBody PasswordCheckRequest request) {
+        return ResponseEntity.ok(guestService.checkPassword(request.getUserId(), request.getPassword()));
     }
 }

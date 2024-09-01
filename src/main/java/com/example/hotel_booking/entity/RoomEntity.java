@@ -61,17 +61,13 @@ public class RoomEntity extends TimeEntity implements Cloneable{
     @JoinColumn(name = "room_type_id")
     private RoomTypeEntity roomTypeEntity;
 
-    public static RoomEntity toInsertEntity(RoomDto roomDto, HotelEntity hotelEntity, RoomTypeEntity roomTypeEntity) {
+    public static RoomEntity toInsertEntity(RoomDto roomDto) {
         RoomEntity roomEntity = new RoomEntity();
         roomEntity.setRoomName(roomDto.getRoomName());
         roomEntity.setRoomMax(roomDto.getRoomMax());
         roomEntity.setRoomPrice(roomDto.getRoomPrice());
         roomEntity.setRoomContent(roomDto.getRoomContent());
-        /*roomEntity.setCheckIn(roomDto.getCheckIn());
-        roomEntity.setCheckOut(roomDto.getCheckOut());*/
         roomEntity.setBreakfastPrice(roomDto.getBreakfastPrice());
-        roomEntity.setHotelEntity(hotelEntity);
-        roomEntity.setRoomTypeEntity(roomTypeEntity);
         return roomEntity;
     }
 

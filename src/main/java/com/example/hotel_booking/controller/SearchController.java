@@ -6,6 +6,7 @@ import com.example.hotel_booking.dto.TestDto;
 import com.example.hotel_booking.entity.HotelEntity;
 import com.example.hotel_booking.service.HotelFileService;
 import com.example.hotel_booking.service.HotelService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,21 +16,15 @@ import java.util.*;
 
 @RestController
 @CrossOrigin
+@RequiredArgsConstructor
 @RequestMapping("/api/search")
 public class SearchController {
     private final HotelService hotelService;
     private final HotelFileService hotelFileService;
 
-    @Autowired
-    public SearchController(HotelService hotelService, HotelFileService hotelFileService) {
-        this.hotelService = hotelService;
-        this.hotelFileService = hotelFileService;
-    }
-
     //호텔 찾기
     @PostMapping("hotel")
-    public Map<String, Object> searchHotel(@RequestBody Map<String, Object> data) {
-        Map<String, Object> resultMap = new HashMap<>();
+    public ResponseEntity<Map<?, ?>> searchHotel(@RequestBody Map<String, Object> data) {
         List<Integer> gradeIntegerList = (List<Integer>) data.get("grade");
         List<Integer> cityIdIntegerList = (List<Integer>) data.get("cityId");
         List<Integer> facilityIdIntegerList = (List<Integer>) data.get("facilityId");
@@ -65,7 +60,6 @@ public class SearchController {
         }
 
         List<HotelDto> hotelDtoList = hotelService.searchHotel(gradeList, cityIdList, facilityIdList, hotelName);
-        //Map<Long, List<HotelFileDto>> hotelFileDtoList = hotelFileService.getThumbnailList(hotelDtoList.stream().map(HotelDto::getId).toList());
 
         String startDateData = data.get("startDate").toString();
         String endDateData = data.get("endDate").toString();
@@ -84,18 +78,14 @@ public class SearchController {
         }
 
         int peopleCount = Integer.parseInt(data.get("peopleCount").toString());
+        Map<String, Object> resultMap = new HashMap<>();
 
         resultMap.put("hotelDtoList", hotelDtoList);
         resultMap.put("startDate", startDate);
         resultMap.put("endDate", endDate);
         resultMap.put("peopleCount", peopleCount);
 
-        System.out.println("startDate: " + startDate);
-        System.out.println("endDate: " + endDate);
-        System.out.println("peopleCount: " + peopleCount);
-
-
-        return resultMap;
+        return ResponseEntity.ok(resultMap) ;
     }
 
 }

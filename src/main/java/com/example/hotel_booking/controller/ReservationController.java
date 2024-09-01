@@ -30,8 +30,6 @@ public class ReservationController {
     public ResponseEntity<Map<?, ?>> selectOne(@PathVariable Long roomId) {
         HashMap<String, Object> resultMap = new HashMap<>();
 
-
-
         resultMap.put("reservationDto", reservationService.selectOne(roomId));
         resultMap.put("roomDto", roomService.selectOne(reservationService.selectOne(roomId).getRoomId()));
         resultMap.put("roomTypeList", roomTypeService.selectAll());
@@ -61,7 +59,7 @@ public class ReservationController {
             e.printStackTrace();
             resultMap.put("result", "fail");
         }
-        return resultMap;
+        return ResponseEntity.ok(resultMap);
     }
 }
 

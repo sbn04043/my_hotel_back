@@ -64,43 +64,6 @@ public class HotelController {
     @PostMapping("/update/{id}")
     public ResponseEntity<Map<?, ?>> update(@RequestBody HashMap<String, Object> request, @PathVariable Long id) {
         return ResponseEntity.ok(hotelService.save(request, id));
-        HotelDto hotelDto = new HotelDto();
-
-        hotelDto.setHotelName((String) valueMap.get("hotelName"));
-        hotelDto.setHotelEmail((String) valueMap.get("hotelEmail"));
-        hotelDto.setHotelPhone((String) valueMap.get("hotelPhone"));
-        hotelDto.setHotelAddress((String) valueMap.get("hotelAddress"));
-        System.out.println(valueMap.get("hotelGrade").toString());
-        int hotelGrade = Integer.parseInt(valueMap.get("hotelGrade").toString());
-        int cityId = Integer.parseInt(valueMap.get("cityId").toString());
-
-        hotelDto.setId(id);
-        hotelDto.setHotelGrade((long) hotelGrade);
-        hotelDto.setCityId((long) cityId);
-
-        hotelService.update(hotelDto);
-
-        List<FacilityDto> facilityDtoList = new ArrayList<>();
-
-        List<Integer> facilityList = (ArrayList<Integer>) valueMap.get("facilities");
-        for (int i = 0; i < facilityList.size(); i++) {
-            FacilityDto temp = new FacilityDto();
-            temp.setHotelId(id);
-            temp.setFacilityId(facilityList.get(i).longValue());
-            facilityDtoList.add(temp);
-        }
-
-        facilityService.update(facilityDtoList, id);
-        System.out.println(facilityList);
-
-        System.out.println("HotelController.update");
-
-        HashMap<String, Object> resultMap = new HashMap<>();
-        resultMap.put("result", hotelDto);
-        resultMap.put("resultId", id);
-
-        return ResponseEntity.ok(resultMap);
-
     }
 
 
@@ -163,8 +126,7 @@ public class HotelController {
         Path filePath = Paths.get("src/main/resources/static/hotel").resolve(fileName);
         if (Files.exists(filePath)) {
             Resource fileResource = new UrlResource(filePath.toUri());
-            return ResponseEntity.ok()
-                    .body(fileResource);
+            return ResponseEntity.ok().body(fileResource);
         } else {
             return ResponseEntity.notFound().build();
         }

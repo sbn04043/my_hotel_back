@@ -7,6 +7,8 @@ import com.example.hotel_booking.service.RoomFileService;
 import com.example.hotel_booking.service.RoomService;
 import com.example.hotel_booking.service.RoomTypeService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
@@ -26,67 +28,49 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @RestController
+@RequiredArgsConstructor
 @CrossOrigin
-@RequestMapping("/api/room")
+@RequestMapping("/api/rooms")
 public class RoomController {
+    private final RoomService roomService;
+    private final RoomTypeService roomTypeService;
+    private final RoomFileService roomFileService;
 
-
-    private final RoomService ROOM_SERVICE;
-    private final RoomTypeService ROOM_TYPE_SERVICE;
-    private final RoomFileService ROOM_FILE_SERVICE;
-
-    public RoomController(RoomTypeService roomTypeService, RoomService roomService, RoomFileService roomFileService) {
-        this.ROOM_TYPE_SERVICE = roomTypeService;
-        this.ROOM_SERVICE = roomService;
-        this.ROOM_FILE_SERVICE = roomFileService;
-    }
-
-    @GetMapping("showOne/{id}")
-    public HashMap<String, Object> selectOne(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<HashMap<?, ?>> selectOne(@PathVariable Long id) {
         HashMap<String, Object> resultMap = new HashMap<>();
-        List<RoomFileDto> roomFileDtoList = ROOM_FILE_SERVICE.findByRoomId(id);
-        System.out.println(roomFileDtoList);
-        resultMap.put("roomDto", ROOM_SERVICE.selectOne(id));
-        resultMap.put("roomTypeList", ROOM_TYPE_SERVICE.selectAll());
-        resultMap.put("roomFileDtoList", roomFileDtoList);
-        resultMap.put("roomPrice", ROOM_SERVICE.selectOne(id).getRoomPrice());
-        System.out.println(ROOM_SERVICE.selectOne(id).getRoomPrice());
 
-        System.out.println(ROOM_SERVICE.selectOne(id));
+        resultMap.put("roomDto", roomService.selectOne(id));
+        resultMap.put("roomTypeList", roomTypeService.selectAll());
+        resultMap.put("roomFileDtoList", roomFileService.findByRoomId(id));
+        resultMap.put("roomPrice", roomService.selectOne(id).getRoomPrice());
+
         // 호텔 아이디를 통해 userID를 빼와야함 지금은 없으니까 비교 안하고 클릭 버튼만 해놓자
-        return resultMap;
+        return ResponseEntity.ok(resultMap);
     }
 
-    @GetMapping("showList/{id}")
-    public HashMap<String, Object> selectList(@PathVariable Long id) {
+    @GetMapping("/list/{id}")
+    public ResponseEntity<HashMap<?, ?>> selectList(@PathVariable Long id) {
         HashMap<String, Object> resultMap = new HashMap<>();
-        List<RoomTypeDto> roomTypeDtoList = ROOM_TYPE_SERVICE.selectAll();
 
-        List<RoomDto> roomDtoList = ROOM_SERVICE.selectAll(id);
+        resultMap.put("roomTypeList", roomTypeService.selectAll());
+        resultMap.put("roomList", roomService.selectAll(id).stream()
+                .map(roomDto -> {
+                    roomDto.setImageList(roomFileService.findByRoomIdToName(roomDto.getId()));
+                    return roomDto;
+                }).toList());
 
-        for (RoomDto roomDto : roomDtoList) {
-            roomDto.setImageList(ROOM_FILE_SERVICE.findByRoomIdToName(roomDto.getId()));
-        }
-
-
-        resultMap.put("roomTypeList", roomTypeDtoList);
-        resultMap.put("roomList", roomDtoList);
-
-        return resultMap;
+        return ResponseEntity.ok(resultMap);
     }
 
 
-    @GetMapping("write/{hotelId}")
-    public RoomDto write(@PathVariable Long hotelId) {
-        RoomDto roomDto = new RoomDto();
-        roomDto.setHotelId(1L);
-        System.out.println(roomDto);
-        return roomDto;
+    @GetMapping("/write/{hotelId}")
+    public ResponseEntity<RoomDto> write(@PathVariable Long hotelId) {
+        return ResponseEntity.ok(RoomDto.builder().hotelId(hotelId).build());
     }
 
-    @PostMapping("imgInsert/{id}")
+    @PostMapping("/imgInsert/{id}")
     public void insertImg(@RequestParam(value = "file", required = false) MultipartFile[] files, @PathVariable Long id, HttpServletRequest request) throws IOException {
-
         System.out.println("files = " + Arrays.toString(files) + ", id = " + id);
 
         StringBuilder fileNames = new StringBuilder();
@@ -121,56 +105,47 @@ public class RoomController {
             temp.setStoredFileName(storedFileName);
             temp.setExtension(extension);
 
-            ROOM_FILE_SERVICE.save(temp, id);
-
+            roomFileService.save(temp, id);
         }
-
     }
 
-    @PostMapping("write/{hotelId}")
-    public HashMap<String, Object> write(@PathVariable Long hotelId, @RequestBody RoomDto roomDto) {
-        System.out.println(roomDto);
-        roomDto.setHotelId(hotelId);
-        List<RoomTypeDto> roomTypeDtoList = ROOM_TYPE_SERVICE.selectAll();
+    @PostMapping("/write/{hotelId}")
+    public ResponseEntity<HashMap<?, ?>> write(@PathVariable Long hotelId, @RequestBody RoomDto roomDto) {
         HashMap<String, Object> resultMap = new HashMap<>();
+
         try {
-            Long id = ROOM_SERVICE.insert(roomDto);
             resultMap.put("result", "success");
-            resultMap.put("roomId", id);
-            resultMap.put("roomTypeList", roomTypeDtoList);
+            resultMap.put("room", roomService.insert(RoomDto.builder().hotelId(hotelId).build()));
+            resultMap.put("roomTypeList", roomTypeService.selectAll());
         } catch (Exception e) {
             e.printStackTrace();
             resultMap.put("result", "fail");
         }
-        return resultMap;
+
+        return ResponseEntity.ok(resultMap);
     }
 
-    @PostMapping("update")
-    public HashMap<String, Object> update(@RequestBody RoomDto roomDto, Long hotelId) {
+    @PostMapping("/update")
+    public ResponseEntity<HashMap<?, ?>> update(@RequestBody RoomDto roomDto) {
         HashMap<String, Object> resultMap = new HashMap<>();
-        ROOM_SERVICE.update(roomDto);
-        resultMap.put("destRoomId", roomDto.getId());
-        List<RoomTypeDto> roomTypeDtoList = ROOM_TYPE_SERVICE.selectAll();
+
         try {
-            ROOM_SERVICE.update(roomDto);
             resultMap.put("result", "success");
-            resultMap.put("resultRoomId", roomDto.getId());
-            resultMap.put("roomTypeList", roomTypeDtoList);
+            resultMap.put("resultRoom", roomService.update(roomDto));
+            resultMap.put("roomTypeList", roomTypeService.selectAll());
         } catch (Exception e) {
             e.printStackTrace();
             resultMap.put("result", "fail");
         }
-        return resultMap;
+        return ResponseEntity.ok(resultMap);
     }
 
-    @GetMapping("delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        ROOM_SERVICE.delete(id);
-
-        return ResponseEntity.ok().build();
+    @GetMapping("/delete/{id}")
+    public ResponseEntity<Boolean> delete(@PathVariable Long id) {
+        return ResponseEntity.ok(roomService.delete(id));
     }
 
-    @GetMapping("roomImage")
+    @GetMapping("/roomImage")
     public ResponseEntity<Resource> getImage(@RequestParam String fileName) throws IOException {
         Path filePath = Paths.get("src/main/resources/static/room").resolve(fileName);
         if (Files.exists(filePath)) {
@@ -182,7 +157,7 @@ public class RoomController {
         }
     }
 
-    @PostMapping("showListByCondition")
+    @PostMapping("/showListByCondition")
     public HashMap<String, Object> selectListByDateAndPeopleCount(@RequestBody Map<String, Object> params) {
         HashMap<String, Object> resultMap = new HashMap<>();
 
@@ -194,13 +169,13 @@ public class RoomController {
         String startDate = startDateData.substring(0, 4) + startDateData.substring(5, 7) + startDateData.substring(8, 10);
         String endDate = endDateData.substring(0, 4) + endDateData.substring(5, 7) + endDateData.substring(8, 10);
 
-        List<RoomDto> roomDtoList = ROOM_SERVICE.selectAllByCondition(startDate, endDate, (long) hotelId, peopleCount);
+        List<RoomDto> roomDtoList = roomService.selectAllByCondition(startDate, endDate, (long) hotelId, peopleCount);
 
 
-        List<RoomTypeDto> roomTypeDtoList = ROOM_TYPE_SERVICE.selectAll();
+        List<RoomTypeDto> roomTypeDtoList = roomTypeService.selectAll();
 
         for (RoomDto roomDto : roomDtoList) {
-            roomDto.setImageList(ROOM_FILE_SERVICE.findByRoomIdToName(roomDto.getId()));
+            roomDto.setImageList(roomFileService.findByRoomIdToName(roomDto.getId()));
         }
 
 

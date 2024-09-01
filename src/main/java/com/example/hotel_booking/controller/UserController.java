@@ -42,7 +42,6 @@ public class UserController {
 
     @RequestMapping("authFail")
     public ResponseEntity<Map<String, Object>> authFail() {
-        System.out.println("Auth has failed");
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put("result", "fail");
 
