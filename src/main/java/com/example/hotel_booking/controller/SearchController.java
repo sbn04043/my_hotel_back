@@ -20,7 +20,6 @@ import java.util.*;
 @RequestMapping("/api/search")
 public class SearchController {
     private final HotelService hotelService;
-    private final HotelFileService hotelFileService;
 
     //호텔 찾기
     @PostMapping("/hotel")

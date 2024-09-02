@@ -52,46 +52,6 @@ public class RoomController {
         return ResponseEntity.ok(RoomDto.builder().hotelId(hotelId).build());
     }
 
-    @PostMapping("/imgInsert/{id}")
-    public void insertImg(@RequestParam(value = "file", required = false) MultipartFile[] files, @PathVariable Long id, HttpServletRequest request) throws IOException {
-        System.out.println("files = " + Arrays.toString(files) + ", id = " + id);
-
-        StringBuilder fileNames = new StringBuilder();
-
-        Path uploadPath = Paths.get("src/main/resources/static/room/");
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-
-        for (MultipartFile file : files) {
-            String originalFileName = file.getOriginalFilename();
-            long fileSize = file.getSize();
-            String extension = "";
-
-            if (originalFileName != null && originalFileName.contains(".")) {
-                extension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
-            }
-
-            String storedFileName = System.currentTimeMillis() + "." + extension;
-            fileNames.append(",").append(storedFileName);
-
-            Path filePath = uploadPath.resolve(storedFileName);
-            try (InputStream inputStream = file.getInputStream()) {
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            }
-
-            RoomFileDto temp = new RoomFileDto();
-            temp.setId(id);
-            temp.setOriginalFileName(originalFileName);
-            temp.setStoredFileName(storedFileName);
-            temp.setExtension(extension);
-
-            roomFileService.save(temp, id);
-        }
-    }
-
     @PostMapping("/write/{hotelId}")
     public ResponseEntity<HashMap<?, ?>> write(@PathVariable Long hotelId, @RequestBody RoomDto roomDto) {
         HashMap<String, Object> resultMap = new HashMap<>();
@@ -128,46 +88,4 @@ public class RoomController {
         return ResponseEntity.ok(roomService.delete(id));
     }
 
-    @GetMapping("/roomImage")
-    public ResponseEntity<Resource> getImage(@RequestParam String fileName) throws IOException {
-        Path filePath = Paths.get("src/main/resources/static/room").resolve(fileName);
-        if (Files.exists(filePath)) {
-            Resource fileResource = new UrlResource(filePath.toUri());
-            return ResponseEntity.ok()
-                    .body(fileResource);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PostMapping("/showListByCondition")
-    public HashMap<String, Object> selectListByDateAndPeopleCount(@RequestBody Map<String, Object> params) {
-        HashMap<String, Object> resultMap = new HashMap<>();
-
-        int hotelId = (Integer) params.get("hotelId");
-        String startDateData = (String) params.get("startDate");
-        String endDateData = (String) params.get("endDate");
-        Integer peopleCount = (Integer) params.get("peopleCount");
-
-        String startDate = startDateData.substring(0, 4) + startDateData.substring(5, 7) + startDateData.substring(8, 10);
-        String endDate = endDateData.substring(0, 4) + endDateData.substring(5, 7) + endDateData.substring(8, 10);
-
-        List<RoomDto> roomDtoList = roomService.selectAllByCondition(startDate, endDate, (long) hotelId, peopleCount);
-
-
-        List<RoomTypeDto> roomTypeDtoList = roomTypeService.selectAll();
-
-        for (RoomDto roomDto : roomDtoList) {
-            roomDto.setImageList(roomFileService.findByRoomIdToName(roomDto.getId()));
-        }
-
-
-        resultMap.put("roomTypeList", roomTypeDtoList);
-        resultMap.put("roomList", roomDtoList);
-        resultMap.put("startDate", startDate);
-        resultMap.put("endDate", endDate);
-        resultMap.put("peopleCount", peopleCount);
-
-        return resultMap;
-    }
 }

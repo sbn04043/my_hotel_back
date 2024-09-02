@@ -18,14 +18,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserController {
-    private final UserService USER_SERVICE;
-    @Autowired
+    private final UserService userService;
     private BCryptPasswordEncoder encoder;
-
-    public UserController(UserService USER_SERVICE) {
-        this.USER_SERVICE = USER_SERVICE;
-    }
 
     @RequestMapping("authOk")
     public ResponseEntity<Map<String, Object>> authOk(Authentication authentication) {
@@ -63,7 +59,7 @@ public class UserController {
         HashMap<String, Object> resultMap = new HashMap<>();
 
         try {
-            USER_SERVICE.register(userDto);
+            userService.register(userDto);
             resultMap.put("result", "success");
             resultMap.put("resultId", userDto.getId());
 

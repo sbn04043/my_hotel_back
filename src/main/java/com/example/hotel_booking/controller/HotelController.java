@@ -73,18 +73,4 @@ public class HotelController {
     public ResponseEntity<Boolean> deleteHotel(@PathVariable Long id) {
         return ResponseEntity.ok(hotelService.delete(id));
     }
-
-    @PostMapping("/imgInsert/{id}")
-    public ResponseEntity<Boolean> insertImg(@RequestParam(value = "file", required = false) MultipartFile[] files, @RequestParam Long id) throws IOException {
-        return ResponseEntity.ok(hotelFileService.save(files, id));
-    }
-
-    @GetMapping("/image")
-    public ResponseEntity<Resource> getImage(@RequestParam String fileName) throws IOException {
-        if (Files.exists(Paths.get("src/main/resources/static/hotel").resolve(fileName))) {
-            return ResponseEntity.ok().body(new UrlResource(Paths.get("src/main/resources/static/hotel").toUri()));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
 }
