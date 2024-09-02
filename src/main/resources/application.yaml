@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/green_market_db
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1000000
+      pool-name: HikariCP
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        use_sql_comments: true
+    show-sql: true
+
+#  springdoc:
+#    packages-to-scan: com.colabear754.springdoc_example.controllers
+#    default-consumes-media-type: application/json;charset=UTF-8
+#    default-produces-media-type: application/json;charset=UTF-8
+#    swagger-ui:
+#      path: /
+#      disable-swagger-default-url: true
+#      display-request-duration: true
+#      operations-sorter: alpha
+#
+#
+#  sql:
+#    init:
+#      mode: always
+#
+#  jackson:
+#    time-zone: UTC
+
+

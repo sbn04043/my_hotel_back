@@ -8,9 +8,11 @@ import com.example.hotel_booking.entity.RoomTypeEntity;
 import com.example.hotel_booking.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,12 +23,13 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
     private final ReservationRepository reservationRepository;
+    private final RoomFileRepository roomFileRepository;
+    private final RoomFileService roomFileService;
 
     public RoomDto insert(RoomDto roomDto) {
         return RoomDto.toRoomDto(roomRepository.save(RoomEntity.toInsertEntity(roomDto)));
     }
 
-    @Transactional
     public List<RoomDto> selectAll(Long hotelId) {
         HotelEntity hotelEntity = hotelRepository.findById(hotelId).get();
         List<RoomEntity> roomEntityList = roomRepository.findAllByHotelEntityOrderByIdDesc(hotelEntity);
@@ -115,5 +118,25 @@ public class RoomService {
         }
 
         return roomDtoList;
+    }
+
+    public HashMap<?, ?> get(Long id) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+
+        resultMap.put("roomDto", roomRepository.findById(id));
+        resultMap.put("roomTypeList", roomTypeRepository.findAll());
+        resultMap.put("roomFileDtoList", roomFileRepository.findByRoomEntity_id(id));
+
+        return resultMap;
+    }
+
+    public HashMap<?, ?> getRoomListByHotelId(Long hotelId) {
+        HashMap<String, Object> resultMap = new HashMap<>();
+
+        resultMap.put("roomTypeList", roomRepository.findAll());
+        resultMap.put("roomList", selectAll(hotelId).stream()
+                .peek(roomDto -> roomDto.setImageList(roomFileService.findByRoomIdToName(roomDto.getId()))).toList());
+
+        return resultMap;
     }
 }

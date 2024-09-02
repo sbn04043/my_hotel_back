@@ -23,7 +23,7 @@ public class SearchController {
     private final HotelFileService hotelFileService;
 
     //호텔 찾기
-    @PostMapping("hotel")
+    @PostMapping("/hotel")
     public ResponseEntity<Map<?, ?>> searchHotel(@RequestBody Map<String, Object> data) {
         List<Integer> gradeIntegerList = (List<Integer>) data.get("grade");
         List<Integer> cityIdIntegerList = (List<Integer>) data.get("cityId");

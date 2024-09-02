@@ -19,6 +19,7 @@ import java.util.Date;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ReservationDto implements Serializable {
     private Long id;
     private Date startDate;
@@ -46,15 +47,14 @@ public class ReservationDto implements Serializable {
     }
 
     public static ReservationDto toReservationDto(ReservationEntity reservationEntity) {
-        ReservationDto reservationDto = new ReservationDto();
-        reservationDto.setId(reservationEntity.getId());
-        reservationDto.setStartDate(reservationEntity.getStartDate());
-        reservationDto.setEndDate(reservationEntity.getEndDate());
-        reservationDto.setReservationNumber(reservationEntity.getReservationNumber());
-        reservationDto.setPayPrice(reservationEntity.getPayPrice());
-        reservationDto.setIsBreakfast(reservationEntity.getIsBreakfast());
-        reservationDto.setEnabled(reservationEntity.getEnabled());
-        return reservationDto;
+        return builder().id(reservationEntity.getId())
+                .startDate(reservationEntity.getStartDate())
+                .endDate(reservationEntity.getEndDate())
+                .reservationNumber(reservationEntity.getReservationNumber())
+                .payPrice(reservationEntity.getPayPrice())
+                .isBreakfast(reservationEntity.getIsBreakfast())
+                .enabled(reservationEntity.getEnabled())
+                .build();
     }
 
 }

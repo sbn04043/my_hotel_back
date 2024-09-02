@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.MulticastChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,14 +42,15 @@ public class HotelController {
 
     @GetMapping("/list")
     public ResponseEntity<List<HotelDto>> hotelList() {
-        return ResponseEntity.ok(hotelService.selectAll().stream().map(hotelDto -> HotelDto.toHotelDto(HotelEntity.builder()
-                .id(hotelDto.getId())
-                .hotelName(hotelDto.getHotelName())
-                .hotelAddress(hotelDto.getHotelAddress())
-                .hotelPhone(hotelDto.getHotelPhone())
-                .hotelEmail(hotelDto.getHotelEmail())
-                .hotelGrade(hotelDto.getHotelGrade())
-                .build())).toList());
+        return ResponseEntity.ok(hotelService.selectAll().stream().map(hotelDto ->
+                HotelDto.toHotelDto(HotelEntity.builder()
+                        .id(hotelDto.getId())
+                        .hotelName(hotelDto.getHotelName())
+                        .hotelAddress(hotelDto.getHotelAddress())
+                        .hotelPhone(hotelDto.getHotelPhone())
+                        .hotelEmail(hotelDto.getHotelEmail())
+                        .hotelGrade(hotelDto.getHotelGrade())
+                        .build())).toList());
     }
 
     @GetMapping("/{id}")
@@ -74,63 +76,15 @@ public class HotelController {
 
     @PostMapping("/imgInsert/{id}")
     public ResponseEntity<Boolean> insertImg(@RequestParam(value = "file", required = false) MultipartFile[] files, @RequestParam Long id) throws IOException {
-        System.out.println("HotelController.insertImg");
-        System.out.println("files = " + Arrays.toString(files) + ", id = " + id);
-
-        if (files == null || files.length == 0) {
-            return ResponseEntity.ok(false);
-        }
-
-        StringBuilder fileNames = new StringBuilder();
-
-        Path uploadPath = Paths.get("src/main/resources/static/hotel");
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-
-        for (MultipartFile file : files) {
-            String originalFileName = file.getOriginalFilename();
-            long fileSize = file.getSize();
-            String extension = "";
-
-            if (originalFileName != null && originalFileName.contains(".")) {
-                extension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
-            }
-
-            String storedFileName = System.currentTimeMillis() + "." + extension;
-            fileNames.append(",").append(storedFileName);
-
-            Path filePath = uploadPath.resolve(storedFileName);
-            try (InputStream inputStream = file.getInputStream()) {
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            }
-
-            HotelFileDto temp = new HotelFileDto();
-            temp.setId(id);
-            temp.setOriginalFileName(originalFileName);
-            temp.setStoredFileName(storedFileName);
-            temp.setExtension(extension);
-
-            System.out.println(temp);
-
-            hotelFileService.save(temp, id);
-        }
-
-        return ResponseEntity.ok(true);
+        return ResponseEntity.ok(hotelFileService.save(files, id));
     }
 
     @GetMapping("/image")
     public ResponseEntity<Resource> getImage(@RequestParam String fileName) throws IOException {
-        Path filePath = Paths.get("src/main/resources/static/hotel").resolve(fileName);
-        if (Files.exists(filePath)) {
-            Resource fileResource = new UrlResource(filePath.toUri());
-            return ResponseEntity.ok().body(fileResource);
+        if (Files.exists(Paths.get("src/main/resources/static/hotel").resolve(fileName))) {
+            return ResponseEntity.ok().body(new UrlResource(Paths.get("src/main/resources/static/hotel").toUri()));
         } else {
             return ResponseEntity.notFound().build();
         }
     }
-
-
 }

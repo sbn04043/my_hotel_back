@@ -38,29 +38,12 @@ public class RoomController {
 
     @GetMapping("/{id}")
     public ResponseEntity<HashMap<?, ?>> selectOne(@PathVariable Long id) {
-        HashMap<String, Object> resultMap = new HashMap<>();
-
-        resultMap.put("roomDto", roomService.selectOne(id));
-        resultMap.put("roomTypeList", roomTypeService.selectAll());
-        resultMap.put("roomFileDtoList", roomFileService.findByRoomId(id));
-        resultMap.put("roomPrice", roomService.selectOne(id).getRoomPrice());
-
-        // 호텔 아이디를 통해 userID를 빼와야함 지금은 없으니까 비교 안하고 클릭 버튼만 해놓자
-        return ResponseEntity.ok(resultMap);
+        return ResponseEntity.ok(roomService.get(id));
     }
 
-    @GetMapping("/list/{id}")
-    public ResponseEntity<HashMap<?, ?>> selectList(@PathVariable Long id) {
-        HashMap<String, Object> resultMap = new HashMap<>();
-
-        resultMap.put("roomTypeList", roomTypeService.selectAll());
-        resultMap.put("roomList", roomService.selectAll(id).stream()
-                .map(roomDto -> {
-                    roomDto.setImageList(roomFileService.findByRoomIdToName(roomDto.getId()));
-                    return roomDto;
-                }).toList());
-
-        return ResponseEntity.ok(resultMap);
+    @GetMapping("/list/{hotelId}")
+    public ResponseEntity<HashMap<?, ?>> selectList(@PathVariable Long hotelId) {
+        return ResponseEntity.ok(roomService.getRoomListByHotelId(hotelId));
     }
 
 

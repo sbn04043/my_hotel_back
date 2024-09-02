@@ -10,7 +10,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.MulticastChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 import java.util.ArrayList;
@@ -25,7 +33,6 @@ public class HotelFileService {
     private final HotelFileRepository hotelFileRepository;
 
 
-
     @Autowired
     public HotelFileService(HotelFileRepository hotelFileRepository, HotelRepository hotelRepository) {
         this.hotelFileRepository = hotelFileRepository;
@@ -33,13 +40,47 @@ public class HotelFileService {
     }
 
 
-    public void save(HotelFileDto hotelFileDto, Long id) {
+    public boolean save(MultipartFile[] files, Long id) throws IOException {
         Optional<HotelEntity> optionalHotelEntity = hotelRepository.findById(id);
-        HotelEntity hotelEntity = optionalHotelEntity.get();
-        HotelFileEntity hotelFileEntity = HotelFileEntity.toHotelFileEntity(hotelEntity, hotelFileDto.getOriginalFileName(), hotelFileDto.getStoredFileName());
-        hotelFileRepository.save(hotelFileEntity);
-    }
+        if (optionalHotelEntity.isPresent()) {
+            StringBuilder fileNames = new StringBuilder();
 
+            Path uploadPath = Paths.get("src/main/resources/static/hotel");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            for (MultipartFile file : files) {
+                String originalFileName = file.getOriginalFilename();
+                long fileSize = file.getSize();
+                String extension = "";
+
+                if (originalFileName != null && originalFileName.contains(".")) {
+                    extension = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
+                }
+
+                String storedFileName = System.currentTimeMillis() + "." + extension;
+                fileNames.append(",").append(storedFileName);
+
+                Path filePath = uploadPath.resolve(storedFileName);
+                try (InputStream inputStream = file.getInputStream()) {
+                    Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+
+                }
+
+                hotelFileRepository.save(HotelFileEntity.builder()
+                        .id(id)
+                        .originalFileName(originalFileName)
+                        .storedFileName(storedFileName)
+                        .build());
+
+
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 
     public List<HotelFileDto> findByHotelId(long id) {
@@ -54,9 +95,9 @@ public class HotelFileService {
 
     public List<String> findByHotelIdToName(Long id) {
         List<HotelFileEntity> hotelFileEntityList = hotelFileRepository.findByHotelEntity_id(id);
-        List <String> hotelFileStoredNameList=new ArrayList<>();
+        List<String> hotelFileStoredNameList = new ArrayList<>();
         for (HotelFileEntity hotelFileEntity : hotelFileEntityList) {
-            hotelFileStoredNameList.add(HotelFileDto.toHotelFileDto(hotelFileEntity,id).getStoredFileName());
+            hotelFileStoredNameList.add(HotelFileDto.toHotelFileDto(hotelFileEntity, id).getStoredFileName());
         }
         return hotelFileStoredNameList;
     }

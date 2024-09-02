@@ -1,10 +1,15 @@
 package com.example.hotel_booking.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+@Builder
 @Table(name = "hotel_file_table")
 public class HotelFileEntity {
     @Id
