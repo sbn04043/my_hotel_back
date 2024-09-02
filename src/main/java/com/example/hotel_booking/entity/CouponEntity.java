@@ -19,7 +19,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "hotel_coupon")
-public class CouponEntity extends TimeEntity{
+public class CouponEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

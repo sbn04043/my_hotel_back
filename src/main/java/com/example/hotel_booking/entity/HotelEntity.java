@@ -27,7 +27,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "hotel")
-public class HotelEntity extends TimeEntity{
+public class HotelEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

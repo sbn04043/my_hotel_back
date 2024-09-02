@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @Table(name = "hotel_sales")
-public class SalesEntity extends TimeEntity {
+public class SalesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

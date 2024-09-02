@@ -28,8 +28,6 @@ public class ReviewDto implements Serializable {
 
     public static ReviewDto toReviewDto(ReviewEntity reviewEntity) {
         ReviewDto reviewDto = new ReviewDto();
-        reviewDto.setCreatedTime(reviewEntity.getCreatedTime());
-        reviewDto.setUpdatedTime(reviewEntity.getUpdatedTime());
         reviewDto.setId(reviewEntity.getId());
         reviewDto.setHotelId(reviewEntity.getHotelId());
         reviewDto.setUserId(reviewEntity.getUserId());

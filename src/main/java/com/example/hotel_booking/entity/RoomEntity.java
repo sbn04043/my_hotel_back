@@ -25,7 +25,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "room")
-public class RoomEntity extends TimeEntity implements Cloneable{
+public class RoomEntity implements Cloneable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

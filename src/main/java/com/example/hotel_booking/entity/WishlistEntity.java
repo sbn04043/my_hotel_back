@@ -24,7 +24,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "hotel_wishlist")
-public class WishlistEntity extends TimeEntity {
+public class WishlistEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
