@@ -54,7 +54,7 @@ public class HotelController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<?, ?>> selectOne(@PathVariable Long id) {
+    public ResponseEntity<HotelDto> selectOne(@PathVariable Long id) {
         return ResponseEntity.ok(hotelService.findById(id));
     }
 

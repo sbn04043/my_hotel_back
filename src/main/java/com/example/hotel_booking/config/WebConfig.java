@@ -24,4 +24,4 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE")  // 허용할 HTTP 메서드를 지정합니다
                 .allowCredentials(true);  // 자격 증명이 포함된 요청을 허용합니다
     }
-}/**/
+}

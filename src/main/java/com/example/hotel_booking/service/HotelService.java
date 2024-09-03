@@ -211,14 +211,8 @@ public class HotelService {
         return hotelDtoList;
     }
 
-    public Map<?, ?> findById(long id) {
-        HashMap<String, Object> hashMap = new HashMap<>();
-
-        hashMap.put("hotelDto", findById(id));
-        hashMap.put("facilities", facilityAll(id).stream().distinct().collect(Collectors.toList()));
-        hashMap.put("hotelFileDtoList", hotelFileService.findByHotelId(id));
-
-        return hashMap;
+    public HotelDto findById(long id) {
+        return HotelDto.toHotelDto(hotelRepository.findById(id));
     }
 
     public List<Long> facilityAll(long id) {
