@@ -54,8 +54,8 @@ public class HotelController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<HotelDto> selectOne(@PathVariable Long id) {
-        return ResponseEntity.ok(hotelService.findById(id));
+    public ResponseEntity<HotelEntity> selectOne(@PathVariable Long id) {
+        return ResponseEntity.ok(hotelRepository.findById(id).get());
     }
 
     @PostMapping("/insert")
