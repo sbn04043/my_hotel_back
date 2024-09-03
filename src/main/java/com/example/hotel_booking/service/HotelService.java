@@ -212,6 +212,8 @@ public class HotelService {
     }
 
     public HotelDto findById(long id) {
+        System.out.println(hotelRepository.findById(id));
+        System.out.println(HotelDto.toHotelDto(hotelRepository.findById(id)));
         return HotelDto.toHotelDto(hotelRepository.findById(id));
     }
 
