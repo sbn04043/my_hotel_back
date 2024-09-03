@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +19,10 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserController {
     private final UserService userService;
-    private BCryptPasswordEncoder encoder;
 
     @RequestMapping("authOk")
-    public ResponseEntity<Map<String, Object>> authOk(Authentication authentication) {
+    public ResponseEntity<Map<String, Object>> authOk(@RequestBody UserDto userDto) {
         Map<String, Object> resultMap = new HashMap<>();
-        UserDto userDto = (UserDto) authentication.getPrincipal();
         // getPrincipal을 바로 resultMap에 넣는건 좋지 않다 왜냐면 패스워드가 넘어가니깐
         resultMap.put("result", "success");
         resultMap.put("id", userDto.getId());
@@ -55,7 +51,7 @@ public class UserController {
     @PostMapping("register")
     public HashMap<String, Object> register(@RequestBody UserDto userDto) {
         System.out.println(userDto);
-        userDto.setPassword(encoder.encode(userDto.getPassword()));
+        userDto.setPassword(userDto.getPassword());
         HashMap<String, Object> resultMap = new HashMap<>();
 
         try {
